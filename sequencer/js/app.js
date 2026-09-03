@@ -27,6 +27,7 @@ class App {
     this.isPlaying = false;
     this.midiInput = null;
     this.ollamaModels = [];
+    this.backendAvailable = false;
 
     this.ui = {
       play: document.getElementById('btnPlay'),
@@ -56,7 +57,41 @@ class App {
     this.render();
     this.loadPatterns();
     this.initMidi();
-    this.loadOllamaModels();
+    this.detectBackend();
+  }
+
+  async detectBackend() {
+    try {
+      const res = await fetch('/api/health', { method: 'HEAD' });
+      this.backendAvailable = res.ok;
+    } catch (e) {
+      this.backendAvailable = false;
+    }
+    this.applyBackendUI();
+    if (this.backendAvailable) {
+      this.loadOllamaModels();
+    }
+  }
+
+  applyBackendUI() {
+    const disabled = !this.backendAvailable;
+    if (this.ui.btnOllama) {
+      this.ui.btnOllama.disabled = disabled;
+      this.ui.btnOllama.title = disabled
+        ? 'Ollama (requiere servidor) — solo disponible en desarrollo local'
+        : 'Generar padrao con Ollama';
+      this.ui.btnOllama.textContent = disabled ? '🤖 Ollama (requiere servidor)' : '🤖 Ollama IA';
+    }
+    if (this.ui.ollamaModel) this.ui.ollamaModel.disabled = disabled;
+    if (this.ui.ollamaDensity) this.ui.ollamaDensity.disabled = disabled;
+    if (this.ui.ollamaVariation) this.ui.ollamaVariation.disabled = disabled;
+    if (this.ui.btnN8n) {
+      this.ui.btnN8n.disabled = disabled;
+      this.ui.btnN8n.title = disabled
+        ? 'n8n (requiere servidor) — solo disponible en desarrollo local'
+        : 'Exportar workflow n8n';
+      this.ui.btnN8n.textContent = disabled ? '⚡ n8n (requiere servidor)' : '⚡ n8n';
+    }
   }
 
   bind() {
@@ -471,6 +506,10 @@ class App {
   }
 
   async generateWithOllama() {
+    if (!this.backendAvailable) {
+      this.toast('Ollama requiere servidor (no disponible aqui)', true);
+      return;
+    }
     const model = this.ui.ollamaModel.value;
     const density = (parseInt(this.ui.ollamaDensity.value) || 50) / 100;
     const variation = (parseInt(this.ui.ollamaVariation.value) || 40) / 100;
@@ -524,6 +563,10 @@ Retorne SOMENTE JSON válido, sem texto, neste formato:
 
   // ===== N8N =====
   async exportToN8n() {
+    if (!this.backendAvailable) {
+      this.toast('n8n requiere servidor (no disponible aqui)', true);
+      return;
+    }
     try {
       const r = await fetch('/api/n8n/export', {
         method: 'POST',

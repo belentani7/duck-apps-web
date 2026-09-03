@@ -6,6 +6,9 @@
 
 **Um ecossistema real de produção musical profissional em navegador** 🎵
 
+> ⚠️ **Nota sobre o estado real do projeto**
+> Este README descreve uma arquitetura **planejada/declarada** (monorepo React/TypeScript/Tone.js + Express/MongoDB, com `frontend/` e `backend/`). **Essas pastas ainda NÃO estão implementadas.** Por ora existe apenas uma versão **vanilla** (JS puro) em `js/audio-engine.js` e `js/main.js`, servida por um `server.js` HTTP estático (sem banco de dados). O conteúdo acima é o objetivo futuro, não o estado atual.
+
 ---
 
 ## 🎯 Sobre o DUCK
